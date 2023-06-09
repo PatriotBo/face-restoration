@@ -1,6 +1,8 @@
 package logic
 
 import (
+	"face-restoration/internal/constdata"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -23,7 +25,7 @@ type faceRestorationImpl struct {
 // NewFaceRestorationImpl create a new impl
 func NewFaceRestorationImpl() *faceRestorationImpl {
 	e := gin.Default()
-	e.GET("/images/:filename", GetImage)
+	e.Static("/img", constdata.ImagePath)
 	return &faceRestorationImpl{
 		Engine: e,
 	}
