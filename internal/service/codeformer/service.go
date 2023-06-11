@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"face-restoration/internal/conf"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,7 +15,7 @@ import (
 // Service code former service
 type Service interface {
 	SendPredict(ctx context.Context, image string) (string, error)
-	GetPrediction(_ context.Context, id string) (*GetPredictionResponse, error)
+	GetPrediction(ctx context.Context, id string) (*GetPredictionResponse, error)
 }
 
 type serviceImpl struct {
@@ -51,7 +52,6 @@ func (s *serviceImpl) SendPredict(_ context.Context, image string) (string, erro
 	if err != nil {
 		return "", fmt.Errorf("generate request failed :%v", err)
 	}
-
 	resp, err := s.client.Do(request)
 	if err != nil {
 		return "", fmt.Errorf("do request faield :%v", err)
@@ -84,7 +84,6 @@ func (s *serviceImpl) GetPrediction(_ context.Context, id string) (*GetPredictio
 	if err != nil {
 		return nil, fmt.Errorf("generate request failed :%v", err)
 	}
-
 	resp, err := s.client.Do(request)
 	if err != nil {
 		return nil, fmt.Errorf("do request failed :%v", err)
@@ -109,7 +108,7 @@ func generateGetPredictionRequest(id string) (*http.Request, error) {
 		return nil, err
 	}
 
-	request.Header.Set("Authorization", "token") // todo:token 更新
+	request.Header.Set("Authorization", token()) // todo:token 更新
 	request.Header.Set("Content-Type", "application/json")
 	return request, nil
 }
@@ -123,7 +122,11 @@ func generateSendPredictRequest(image string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Set("Authorization", "token") // todo:token 更新
+	request.Header.Set("Authorization", token()) // todo:token 更新
 	request.Header.Set("Content-Type", "application/json")
 	return request, nil
+}
+
+func token() string {
+	return fmt.Sprintf("Token %s", conf.GetCodeFormerToken())
 }

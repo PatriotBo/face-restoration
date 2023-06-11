@@ -25,7 +25,14 @@ type faceRestorationImpl struct {
 // NewFaceRestorationImpl create a new impl
 func NewFaceRestorationImpl() *faceRestorationImpl {
 	e := gin.Default()
+	// 静态图片访问
 	e.Static("/img", constdata.ImagePath)
+
+	msgHandler := newMessageHandler()
+	// 微信消息
+	e.POST("/wx", func(ctx *gin.Context) {
+		msgHandler.HandleMessage(ctx)
+	})
 	return &faceRestorationImpl{
 		Engine: e,
 	}

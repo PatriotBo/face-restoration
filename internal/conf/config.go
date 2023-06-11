@@ -1,6 +1,14 @@
 package conf
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"face-restoration/internal/constdata"
+
+	"gopkg.in/yaml.v2"
+)
 
 var globalConfig *Config
 
@@ -16,25 +24,37 @@ type DBConfig struct {
 	Timeout     int    `yaml:"timeout"` // 超时时间 单位：秒
 }
 
+// OfficialAccountConfig 公众号相关配置
+type OfficialAccountConfig struct {
+	AppID          string `yaml:"appID"`
+	AppSecret      string `yaml:"appSecret"`
+	Token          string `yaml:"token"`
+	EncodingAESKey string `yaml:"encodingAESKey"`
+}
+
+type CodeFormerConfig struct {
+	Token string `yaml:"token"`
+}
+
 // Config 配置信息
 type Config struct {
-	DB DBConfig `yaml:"db"`
+	DB         DBConfig              `yaml:"db"`
+	Wechat     OfficialAccountConfig `yaml:"wechat"`
+	CodeFormer CodeFormerConfig      `yaml:"codeFormer"`
 }
 
 func init() {
-	defaultConfig()
-}
-
-func defaultConfig() {
-	globalConfig = &Config{
-		DB: DBConfig{
-			Host:     "43.156.110.119",
-			Port:     3306,
-			User:     "admin_new",
-			Password: "ZHunbuntu!12",
-			DbName:   "building_progress",
-		},
+	filename := filepath.Join(constdata.ConfigPath, "config.yaml")
+	by, err := os.ReadFile(filename)
+	if err != nil {
+		panic(fmt.Errorf("read config err:%v", err))
 	}
+
+	c := new(Config)
+	if err = yaml.Unmarshal(by, c); err != nil {
+		panic(fmt.Errorf("unmarshal config err:%v", err))
+	}
+	globalConfig = c
 }
 
 // GetDSN 获取 db dsn
@@ -42,4 +62,12 @@ func GetDSN() string {
 	cfg := globalConfig.DB
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&timeout=%ds&loc=Local",
 		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DbName, cfg.Timeout)
+}
+
+func GetWechatConfig() OfficialAccountConfig {
+	return globalConfig.Wechat
+}
+
+func GetCodeFormerToken() string {
+	return globalConfig.CodeFormer.Token
 }
