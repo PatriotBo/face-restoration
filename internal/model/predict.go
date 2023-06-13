@@ -20,6 +20,7 @@ type PredictRecord struct {
 	Status     int       `gorm:"status"` // 0-初始化 1-处理中 2-完成 3-失败
 	PredictID  string    `gorm:"predict_id"`
 	ResultURL  string    `gorm:"result_url"`
+	MediaID    string    `gorm:"media_id"` // 上传 微信 生成的 mediaID
 	CreateTime time.Time `gorm:"create_time"`
 	UpdateTime time.Time `gorm:"update_time"`
 }
