@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"face-restoration/internal/dao"
 	"fmt"
 
 	"face-restoration/internal/conf"
@@ -17,12 +18,14 @@ import (
 type messageHandler struct {
 	codeFormerService codeformer.Service
 	oa                *officialaccount.OfficialAccount
+	dao               dao.DBDao
 }
 
 func newMessageHandler() *messageHandler {
 	return &messageHandler{
 		codeFormerService: codeformer.New(),
 		oa:                newWechatOfficialAccount(),
+		dao:               dao.NewDao(),
 	}
 }
 
