@@ -4,6 +4,7 @@ import (
 	"context"
 	"face-restoration/internal/conf"
 	"face-restoration/internal/model"
+	"github.com/rogpeppe/go-internal/modfile"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -13,6 +14,7 @@ type DBDao interface {
 	GetPredictResult(ctx context.Context, opts PredictOption) ([]*model.PredictRecord, error)
 	CreatePredictRecord(ctx context.Context, r *model.PredictRecord) error
 	UpdatePredictRecord(ctx context.Context, r *model.PredictRecord) error
+	ListProcessingRecords(ctx context.Context) ([]*model.PredictRecord, error)
 }
 
 type dbDao struct {
@@ -50,4 +52,13 @@ func (d *dbDao) CreatePredictRecord(ctx context.Context, r *model.PredictRecord)
 // UpdatePredictRecord update record
 func (d *dbDao) UpdatePredictRecord(ctx context.Context, r *model.PredictRecord) error {
 	return d.db.WithContext(ctx).Model(new(model.PredictRecord)).Updates(r).Error
+}
+
+// ListProcessingRecords get records which status is processing,to fetch results for them.
+func (d *dbDao) ListProcessingRecords(ctx context.Context) ([]*model.PredictRecord, error) {
+	var list []*model.PredictRecord
+	return list, d.db.WithContext(ctx).
+		Where("status = ?", model.Processing).
+		Order("create_time ASC").
+		Find(&list).Error
 }
