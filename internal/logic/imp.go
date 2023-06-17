@@ -2,6 +2,7 @@ package logic
 
 import (
 	"face-restoration/internal/constdata"
+	"face-restoration/internal/crontab"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -20,6 +21,7 @@ func init() {
 
 type faceRestorationImpl struct {
 	Engine *gin.Engine
+	Cron   *crontab.FetchCronImpl
 }
 
 // NewFaceRestorationImpl create a new impl
@@ -35,5 +37,6 @@ func NewFaceRestorationImpl() *faceRestorationImpl {
 	})
 	return &faceRestorationImpl{
 		Engine: e,
+		Cron:   crontab.NewFetchCron(msgHandler.oa),
 	}
 }

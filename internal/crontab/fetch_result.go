@@ -19,32 +19,45 @@ import (
 	"github.com/silenceper/wechat/v2/officialaccount/message"
 )
 
+// FetchCronImpl crontab for fetching result from codeFormer and return them to customers.
 type FetchCronImpl struct {
+	c *cron.Cron
+}
+
+// NewFetchCron create a fetch cron impl
+func NewFetchCron(oa *officialaccount.OfficialAccount) *FetchCronImpl {
+	t := newTask(oa)
+	c := cron.New()
+	if err := c.AddFunc("5/* * * * * *", t.fetch); err != nil {
+		panic(err)
+	}
+	return &FetchCronImpl{
+		c: c,
+	}
+}
+
+// Start run the task
+func (f *FetchCronImpl) Start() {
+	f.c.Start()
+	defer f.c.Stop()
+}
+
+// task crontab tasks
+type task struct {
 	dao       dao.DBDao
 	oa        *officialaccount.OfficialAccount
 	cfService codeformer.Service
 }
 
-func NewFetchCron(oa *officialaccount.OfficialAccount) *FetchCronImpl {
-	return &FetchCronImpl{
+func newTask(oa *officialaccount.OfficialAccount) *task {
+	return &task{
 		dao:       dao.NewDao(),
 		oa:        oa,
 		cfService: codeformer.New(),
 	}
 }
 
-func (f *FetchCronImpl) Start() error {
-	c := cron.New()
-	if err := c.AddFunc("5/* * * * * *", f.fetch); err != nil {
-		panic(err)
-	}
-	c.Start()
-	defer c.Stop()
-
-	return nil
-}
-
-func (f *FetchCronImpl) fetch() {
+func (f *task) fetch() {
 	ctx := context.Background()
 	list, err := f.dao.ListProcessingRecords(ctx)
 	if err != nil {
@@ -83,7 +96,7 @@ func (f *FetchCronImpl) fetch() {
 	}
 }
 
-func (f *FetchCronImpl) sendImageCustomerServiceMessage(openID, mediaID string) error {
+func (f *task) sendImageCustomerServiceMessage(openID, mediaID string) error {
 	msg := message.NewCustomerImgMessage(openID, mediaID)
 	if err := f.oa.GetCustomerMessageManager().Send(msg); err != nil {
 		fmt.Printf("sendImageCustomerServiceMessage faield err:%v \n", err)
@@ -92,7 +105,7 @@ func (f *FetchCronImpl) sendImageCustomerServiceMessage(openID, mediaID string) 
 	return nil
 }
 
-func (f *FetchCronImpl) addMaterial(name, url string) (string, error) {
+func (f *task) addMaterial(name, url string) (string, error) {
 	if err := saveImageLocal(name, url); err != nil {
 		fmt.Printf("save image local err:%v \n", err)
 		return "", err
