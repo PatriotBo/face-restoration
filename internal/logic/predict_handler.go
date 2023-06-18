@@ -79,7 +79,7 @@ func (m *MiniProgramImpl) predict(ctx context.Context, url string) (string, erro
 
 func (m *MiniProgramImpl) fetchPredictResult(ctx context.Context, id string) (string, error) {
 	t := time.NewTicker(2 * time.Second)
-	count := 5
+	count := 10
 	for range t.C {
 		count--
 		if count < 0 {
@@ -89,7 +89,7 @@ func (m *MiniProgramImpl) fetchPredictResult(ctx context.Context, id string) (st
 		if err != nil {
 			return "", err
 		}
-		if rsp.Status != "success" || len(rsp.Output) == 0 {
+		if rsp.Status != "succeeded" || len(rsp.Output) == 0 {
 			fmt.Printf("prediction not ready status:%s \n", rsp.Status)
 			continue
 		}
@@ -104,7 +104,7 @@ func downloadPrediction(id, url string) (string, error) {
 		return "", err
 	}
 	defer func() {
-		if err := resp.Body.Close(); err != nil {
+		if err = resp.Body.Close(); err != nil {
 			fmt.Printf("body close faield err:%v \n", err)
 		}
 	}()
@@ -115,13 +115,13 @@ func downloadPrediction(id, url string) (string, error) {
 		return "", err
 	}
 	defer func() {
-		if err := file.Close(); err != nil {
+		if err = file.Close(); err != nil {
 			fmt.Printf("file close failed err:%v \n", err)
 		}
 	}()
 
 	_, err = io.Copy(file, resp.Body)
-	return id, err
+	return fmt.Sprintf("%s.png", id), err
 }
 
 func genImageURL(name string) string {
