@@ -28,7 +28,7 @@ type FetchCronImpl struct {
 func NewFetchCron(oa *officialaccount.OfficialAccount) *FetchCronImpl {
 	t := newTask(oa)
 	c := cron.New()
-	if err := c.AddFunc("5/* * * * * *", t.fetch); err != nil {
+	if err := c.AddFunc("*/30 * * * * *", t.fetch); err != nil {
 		panic(err)
 	}
 	return &FetchCronImpl{
