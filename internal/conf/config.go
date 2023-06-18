@@ -38,9 +38,10 @@ type CodeFormerConfig struct {
 
 // Config 配置信息
 type Config struct {
-	DB         DBConfig              `yaml:"db"`
-	Wechat     OfficialAccountConfig `yaml:"wechat"`
-	CodeFormer CodeFormerConfig      `yaml:"codeFormer"`
+	DB             DBConfig              `yaml:"db"`
+	Wechat         OfficialAccountConfig `yaml:"wechat"`
+	CodeFormer     CodeFormerConfig      `yaml:"codeFormer"`
+	ImageURLPrefix string                `yaml:"imageURLPrefix"`
 }
 
 func init() {
@@ -72,4 +73,9 @@ func GetWechatConfig() OfficialAccountConfig {
 // GetCodeFormerToken ...
 func GetCodeFormerToken() string {
 	return globalConfig.CodeFormer.Token
+}
+
+// GetConfig ...
+func GetConfig() *Config {
+	return globalConfig
 }

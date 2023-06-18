@@ -14,7 +14,7 @@ import (
 
 // Service code former service
 type Service interface {
-	SendPredict(ctx context.Context, image string) (string, error)
+	SendPredict(ctx context.Context, url string) (string, error)
 	GetPrediction(ctx context.Context, id string) (*GetPredictionResponse, error)
 }
 
@@ -44,11 +44,11 @@ type SendPredictResponse struct {
 	Version string `json:"version"`
 }
 
-const url = "https://api.replicate.com/v1/predictions"
+const address = "https://api.replicate.com/v1/predictions"
 
 // SendPredict send image to prediction by code former
-func (s *serviceImpl) SendPredict(_ context.Context, image string) (string, error) {
-	request, err := generateSendPredictRequest(image)
+func (s *serviceImpl) SendPredict(_ context.Context, url string) (string, error) {
+	request, err := generateSendPredictRequest(url)
 	if err != nil {
 		return "", fmt.Errorf("generate request failed :%v", err)
 	}
@@ -104,7 +104,7 @@ func (s *serviceImpl) GetPrediction(_ context.Context, id string) (*GetPredictio
 }
 
 func generateGetPredictionRequest(id string) (*http.Request, error) {
-	request, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", url, id), nil)
+	request, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", address, id), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -114,12 +114,12 @@ func generateGetPredictionRequest(id string) (*http.Request, error) {
 	return request, nil
 }
 
-func generateSendPredictRequest(image string) (*http.Request, error) {
+func generateSendPredictRequest(url string) (*http.Request, error) {
 	req := new(SendPredictRequest)
 	req.Version = constdata.CodeFormerVersion
-	req.Input.Image = image
+	req.Input.Image = url
 	by, _ := json.Marshal(req)
-	request, err := http.NewRequest("POST", url, bytes.NewBuffer(by))
+	request, err := http.NewRequest("POST", address, bytes.NewBuffer(by))
 	if err != nil {
 		return nil, err
 	}
