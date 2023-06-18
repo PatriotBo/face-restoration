@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"face-restoration/internal/constdata"
 	"face-restoration/internal/crontab"
+	"face-restoration/internal/dao"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,18 +27,41 @@ type faceRestorationImpl struct {
 	Cron   *crontab.FetchCronImpl
 }
 
-// RunService create a new impl
-func RunService() {
+// NewFaceRestorationImpl create a new impl
+func NewFaceRestorationImpl() *faceRestorationImpl {
+	e := gin.Default()
+
+	msgHandler := newMessageHandler()
+	// 微信消息
+	e.POST("/wx", func(ctx *gin.Context) {
+		msgHandler.HandleMessage(ctx)
+	})
+	return &faceRestorationImpl{
+		Engine: e,
+		Cron:   crontab.NewFetchCron(msgHandler.oa),
+	}
+}
+
+// MiniProgramImpl WeChat mini program instance
+type MiniProgramImpl struct {
+	dao dao.DBDao
+}
+
+// NewMiniProgramImpl create a new WeChat mini program instance
+func NewMiniProgramImpl() *MiniProgramImpl {
+	return &MiniProgramImpl{
+		dao: dao.NewDao(),
+	}
+}
+
+// Run start to service
+func (m *MiniProgramImpl) Run() {
 	e := gin.Default()
 	// 静态图片访问
 	e.Static("/img", constdata.ImagePath)
-
-	//msgHandler := newMessageHandler()
-	//// 微信消息
-	//e.POST("/wx", func(ctx *gin.Context) {
-	//	msgHandler.HandleMessage(ctx)
-	//})
-
+	e.POST("/api/predict", func(ctx *gin.Context) {
+		m.Predict(ctx)
+	})
 	// 设置HTTPS证书和密钥
 	certFile := "../certs/cert.pem"
 	keyFile := "../certs/key.pem"

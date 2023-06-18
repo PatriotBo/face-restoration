@@ -5,5 +5,6 @@ import (
 )
 
 func main() {
-	logic.RunService()
+	mp := logic.NewMiniProgramImpl()
+	mp.Run()
 }
