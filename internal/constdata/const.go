@@ -1,7 +1,7 @@
 package constdata
 
 const (
-	ImagePath = "../image" // 图片保存目录
+	ImagePath = "../images" // 图片保存目录
 
 	ConfigPath = "../config/" // 配置文件目录
 

@@ -1,38 +1,37 @@
 package logic
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"os"
-	"time"
+
+	"face-restoration/internal/constdata"
 
 	"github.com/gin-gonic/gin"
 )
 
+type PredictResponse struct {
+	ImageURL string `json:"imageUrl"`
+}
+
 func (m *MiniProgramImpl) Predict(ctx *gin.Context) {
-	file, header, err := ctx.Request.FormFile("file")
+	_, header, err := ctx.Request.FormFile("file")
 	if err != nil {
-		ctx.String(http.StatusBadRequest, "Bad request")
+		fmt.Printf("predict bad request err:%v \n", err)
 		return
 	}
 
 	filename := header.Filename
 	fmt.Println("File name:", filename)
-
-	out, err := os.Create("../images/" + filename)
-	if err != nil {
-		ctx.String(http.StatusInternalServerError, "Failed to save file")
-		return
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, file)
-	if err != nil {
-		ctx.String(http.StatusInternalServerError, "Failed to save file")
+	if err = ctx.SaveUploadedFile(header, constdata.ImagePath); err != nil {
+		fmt.Printf("predict save field err:%v \n", err)
 		return
 	}
 
-	ctx.String(http.StatusOK, "File uploaded successfully")
-	time.Sleep(2 * time.Second)
+	resp := &PredictResponse{
+		ImageURL: fmt.Sprintf("%s/.%s", "", filename),
+	}
+	body, _ := json.Marshal(resp)
+	if _, err = ctx.Writer.Write(body); err != nil {
+		fmt.Printf("write response err:%v \n", err)
+	}
 }
