@@ -52,6 +52,7 @@ func (s *serviceImpl) SendPredict(_ context.Context, image string) (string, erro
 	if err != nil {
 		return "", fmt.Errorf("generate request failed :%v", err)
 	}
+	fmt.Printf("SendPredict request:%+v \n ", request)
 	resp, err := s.client.Do(request)
 	if err != nil {
 		return "", fmt.Errorf("do request faield :%v", err)

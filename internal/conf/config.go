@@ -64,10 +64,12 @@ func GetDSN() string {
 		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DbName, cfg.Timeout)
 }
 
+// GetWechatConfig ...
 func GetWechatConfig() OfficialAccountConfig {
 	return globalConfig.Wechat
 }
 
+// GetCodeFormerToken ...
 func GetCodeFormerToken() string {
 	return globalConfig.CodeFormer.Token
 }

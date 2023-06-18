@@ -2,9 +2,9 @@ package dao
 
 import (
 	"context"
+
 	"face-restoration/internal/conf"
 	"face-restoration/internal/model"
-	"github.com/rogpeppe/go-internal/modfile"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

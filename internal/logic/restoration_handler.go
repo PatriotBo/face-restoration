@@ -3,7 +3,9 @@ package logic
 import (
 	"context"
 	"face-restoration/internal/dao"
+	"face-restoration/internal/model"
 	"fmt"
+	"time"
 
 	"face-restoration/internal/conf"
 	"face-restoration/internal/service/codeformer"
@@ -93,7 +95,7 @@ func (h *messageHandler) handleImageMessage(ctx context.Context, msg *message.Mi
 	}
 }
 
-// todo: 将送修请求返回的 ID 保存到DB，待轮询并返回结果
+// restoration 将送修请求返回的 ID 保存到DB，待轮询并返回结果
 func (h *messageHandler) restoration(ctx context.Context, openID, url string) error {
 	log.Info(fmt.Sprintf("restoration openID:%s, url:%s", openID, url))
 	id, err := h.codeFormerService.SendPredict(ctx, url)
@@ -102,5 +104,18 @@ func (h *messageHandler) restoration(ctx context.Context, openID, url string) er
 		return err
 	}
 	log.Info(fmt.Sprintf("restoration send predict success id:%s", id))
+
+	record := &model.PredictRecord{
+		PredictID:  id,
+		OpenID:     openID,
+		ImageURL:   url,
+		Status:     int(model.Processing),
+		CreateTime: time.Now(),
+		UpdateTime: time.Now(),
+	}
+	if err = h.dao.CreatePredictRecord(ctx, record); err != nil {
+		log.Error(fmt.Sprintf("create predict record err:%v", err))
+		return err
+	}
 	return nil
 }
