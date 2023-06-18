@@ -1,8 +1,10 @@
 package logic
 
 import (
+	"crypto/tls"
 	"face-restoration/internal/constdata"
 	"face-restoration/internal/crontab"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -24,19 +26,34 @@ type faceRestorationImpl struct {
 	Cron   *crontab.FetchCronImpl
 }
 
-// NewFaceRestorationImpl create a new impl
-func NewFaceRestorationImpl() *faceRestorationImpl {
+// RunService create a new impl
+func RunService() {
 	e := gin.Default()
 	// 静态图片访问
 	e.Static("/img", constdata.ImagePath)
 
-	msgHandler := newMessageHandler()
-	// 微信消息
-	e.POST("/wx", func(ctx *gin.Context) {
-		msgHandler.HandleMessage(ctx)
-	})
-	return &faceRestorationImpl{
-		Engine: e,
-		Cron:   crontab.NewFetchCron(msgHandler.oa),
+	//msgHandler := newMessageHandler()
+	//// 微信消息
+	//e.POST("/wx", func(ctx *gin.Context) {
+	//	msgHandler.HandleMessage(ctx)
+	//})
+
+	// 设置HTTPS证书和密钥
+	certFile := "../certs/cert.pem"
+	keyFile := "../certs/key.pem"
+
+	// 配置TLS
+	tlsConfig := &tls.Config{
+		MinVersion: tls.VersionTLS12,
+	}
+
+	server := &http.Server{
+		Addr:      ":443",
+		Handler:   e,
+		TLSConfig: tlsConfig,
+	}
+	// 启动HTTPS服务器
+	if err := server.ListenAndServeTLS(certFile, keyFile); err != nil {
+		panic(err)
 	}
 }
