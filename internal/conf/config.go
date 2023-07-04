@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"face-restoration/internal/constdata"
+	"face-restoration/internal/service/cos"
 
 	"gopkg.in/yaml.v2"
 )
@@ -32,6 +33,7 @@ type OfficialAccountConfig struct {
 	EncodingAESKey string `yaml:"encodingAESKey"`
 }
 
+// CodeFormerConfig config of code former
 type CodeFormerConfig struct {
 	Token string `yaml:"token"`
 }
@@ -42,6 +44,7 @@ type Config struct {
 	Wechat         OfficialAccountConfig `yaml:"wechat"`
 	CodeFormer     CodeFormerConfig      `yaml:"codeFormer"`
 	ImageURLPrefix string                `yaml:"imageURLPrefix"`
+	Cos            cos.Config            `yaml:"cos"`
 }
 
 func init() {

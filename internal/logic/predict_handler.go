@@ -32,8 +32,9 @@ func (m *MiniProgramImpl) Predict(ctx *gin.Context) {
 	}
 
 	resp := &PredictResponse{
-		ImageURL: genImageURL(output),
+		ImageURL: genImageCosURL(output),
 	}
+	fmt.Printf("cos url:%s \n", genImageCosURL(output))
 	body, _ := json.Marshal(resp)
 	if _, err := ctx.Writer.Write(body); err != nil {
 		fmt.Printf("write response err:%v \n", err)
@@ -62,24 +63,36 @@ func (m *MiniProgramImpl) predict(ctx context.Context, url string) (string, erro
 		fmt.Printf("send predict err:%v \n", err)
 		return "", err
 	}
+	startf := time.Now()
 	output, err := m.fetchPredictResult(ctx, id)
 	if err != nil {
 		fmt.Printf("fetch faild err:%v \n", err)
 		return "", err
 	}
+	fmt.Printf("fetch result cost:%v \n", time.Since(startf))
 
+	startd := time.Now()
 	filename, err := downloadPrediction(id, output)
 	if err != nil {
 		fmt.Printf("download prediction err:%v \n", err)
 		return "", err
 	}
+	fmt.Printf("download image cost:%v \n", time.Since(startd))
 
+	// 上传到cos
+	start := time.Now()
+	if err = m.cosService.PutImage(ctx, filename); err != nil {
+		fmt.Printf("put image to cos err:%v \n", err)
+		return "", err
+	}
+	fmt.Printf("cos put cost:%v \n", time.Since(start))
 	return filename, nil
 }
 
 func (m *MiniProgramImpl) fetchPredictResult(ctx context.Context, id string) (string, error) {
-	t := time.NewTicker(2 * time.Second)
-	count := 10
+	fmt.Printf("fetch predict result id:%s \n \n", id)
+	t := time.NewTicker(3 * time.Second)
+	count := 20
 	for range t.C {
 		count--
 		if count < 0 {
@@ -99,6 +112,7 @@ func (m *MiniProgramImpl) fetchPredictResult(ctx context.Context, id string) (st
 }
 
 func downloadPrediction(id, url string) (string, error) {
+	fmt.Printf("downloadPrediction begin to download images id:%s \n", id)
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", err
@@ -126,4 +140,8 @@ func downloadPrediction(id, url string) (string, error) {
 
 func genImageURL(name string) string {
 	return fmt.Sprintf("%s/%s", conf.GetConfig().ImageURLPrefix, name)
+}
+
+func genImageCosURL(name string) string {
+	return fmt.Sprintf("%s/%s", conf.GetConfig().Cos.BucketURL, name)
 }

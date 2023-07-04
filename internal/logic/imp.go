@@ -2,10 +2,12 @@ package logic
 
 import (
 	"crypto/tls"
+	"face-restoration/internal/conf"
 	"face-restoration/internal/constdata"
 	"face-restoration/internal/crontab"
 	"face-restoration/internal/dao"
 	"face-restoration/internal/service/codeformer"
+	"face-restoration/internal/service/cos"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -45,15 +47,17 @@ func NewFaceRestorationImpl() *faceRestorationImpl {
 
 // MiniProgramImpl WeChat mini program instance
 type MiniProgramImpl struct {
-	dao       dao.DBDao
-	cfService codeformer.Service
+	dao        dao.DBDao
+	cfService  codeformer.Service
+	cosService cos.Service
 }
 
 // NewMiniProgramImpl create a new WeChat mini program instance
 func NewMiniProgramImpl() *MiniProgramImpl {
 	return &MiniProgramImpl{
-		dao:       dao.NewDao(),
-		cfService: codeformer.New(),
+		dao:        dao.NewDao(),
+		cfService:  codeformer.New(),
+		cosService: cos.New(conf.GetConfig().Cos),
 	}
 }
 
