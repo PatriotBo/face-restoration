@@ -8,6 +8,7 @@ import (
 	"face-restoration/internal/dao"
 	"face-restoration/internal/service/codeformer"
 	"face-restoration/internal/service/cos"
+	"face-restoration/internal/service/leap"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -47,17 +48,19 @@ func NewFaceRestorationImpl() *faceRestorationImpl {
 
 // MiniProgramImpl WeChat mini program instance
 type MiniProgramImpl struct {
-	dao        dao.DBDao
-	cfService  codeformer.Service
-	cosService cos.Service
+	dao         dao.DBDao
+	cfService   codeformer.Service
+	cosService  cos.Service
+	leapService leap.Service
 }
 
 // NewMiniProgramImpl create a new WeChat mini program instance
 func NewMiniProgramImpl() *MiniProgramImpl {
 	return &MiniProgramImpl{
-		dao:        dao.NewDao(),
-		cfService:  codeformer.New(),
-		cosService: cos.New(conf.GetConfig().Cos),
+		dao:         dao.NewDao(),
+		cfService:   codeformer.New(),
+		cosService:  cos.New(conf.GetConfig().Cos),
+		leapService: leap.New(conf.GetConfig().Leap),
 	}
 }
 

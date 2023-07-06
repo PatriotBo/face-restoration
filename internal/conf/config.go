@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"face-restoration/internal/service/leap"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -45,6 +46,7 @@ type Config struct {
 	CodeFormer     CodeFormerConfig      `yaml:"codeFormer"`
 	ImageURLPrefix string                `yaml:"imageURLPrefix"`
 	Cos            cos.Config            `yaml:"cos"`
+	Leap           leap.Config           `yaml:"leap"`
 }
 
 func init() {
