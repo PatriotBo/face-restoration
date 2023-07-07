@@ -9,6 +9,7 @@ import (
 	"face-restoration/internal/service/codeformer"
 	"face-restoration/internal/service/cos"
 	"face-restoration/internal/service/leap"
+	"face-restoration/internal/service/openai"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -48,19 +49,21 @@ func NewFaceRestorationImpl() *faceRestorationImpl {
 
 // MiniProgramImpl WeChat mini program instance
 type MiniProgramImpl struct {
-	dao         dao.DBDao
-	cfService   codeformer.Service
-	cosService  cos.Service
-	leapService leap.Service
+	dao           dao.DBDao
+	cfService     codeformer.Service
+	cosService    cos.Service
+	leapService   leap.Service
+	openAIService openai.Service
 }
 
 // NewMiniProgramImpl create a new WeChat mini program instance
 func NewMiniProgramImpl() *MiniProgramImpl {
 	return &MiniProgramImpl{
-		dao:         dao.NewDao(),
-		cfService:   codeformer.New(),
-		cosService:  cos.New(conf.GetConfig().Cos),
-		leapService: leap.New(conf.GetConfig().Leap),
+		dao:           dao.NewDao(),
+		cfService:     codeformer.New(),
+		cosService:    cos.New(conf.GetConfig().Cos),
+		leapService:   leap.New(conf.GetConfig().Leap),
+		openAIService: openai.New(conf.GetConfig().OpenAI),
 	}
 }
 
@@ -72,6 +75,10 @@ func (m *MiniProgramImpl) Run() {
 	e.POST("/api/predict", func(ctx *gin.Context) {
 		m.Predict(ctx)
 	})
+	e.POST("/api/generate-image", func(ctx *gin.Context) {
+		m.GenerateImage(ctx)
+	})
+
 	// 设置HTTPS证书和密钥
 	certFile := "../certs/cert.pem"
 	keyFile := "../certs/key.pem"

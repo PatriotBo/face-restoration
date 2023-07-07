@@ -2,6 +2,7 @@ package conf
 
 import (
 	"face-restoration/internal/service/leap"
+	"face-restoration/internal/service/openai"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -47,6 +48,7 @@ type Config struct {
 	ImageURLPrefix string                `yaml:"imageURLPrefix"`
 	Cos            cos.Config            `yaml:"cos"`
 	Leap           leap.Config           `yaml:"leap"`
+	OpenAI         openai.Config         `yaml:"openAI"`
 }
 
 func init() {
