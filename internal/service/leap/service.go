@@ -13,7 +13,8 @@ type Config struct {
 
 // Service leap api service
 type Service interface {
-	GenerateImage(_ context.Context, modID, prompt string) (*Response, error)
+	GenerateImage(_ context.Context, modID, prompt string) (*GenImageResponse, error)
+	GetImages(_ context.Context, modID, inferenceID string) (*GetImagesResponse, error)
 }
 
 type serviceImpl struct {
@@ -27,13 +28,6 @@ func New(cfg Config) Service {
 		client: http.DefaultClient,
 		token:  cfg.Token,
 	}
-}
-
-// Response for both /generate-image and /get-image api
-type Response struct {
-	ID     string   `json:"id"`
-	State  int      `json:"state"`
-	Images []string `json:"images"`
 }
 
 var address = "https://api.tryleap.ai/api/v1/images/models/%s/inferences"

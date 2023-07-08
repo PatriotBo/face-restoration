@@ -3,6 +3,7 @@ package openai
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -35,12 +36,16 @@ func New(cfg Config) Service {
 // ChatCompletion chat with openai api
 func (s *serviceImpl) ChatCompletion(ctx context.Context, messages []openai.ChatCompletionMessage) (
 	openai.ChatCompletionResponse, error) {
+	defer func(start time.Time) {
+		fmt.Printf("INFO ChatCompletion messages:%v \n ", messages)
+		fmt.Printf("INFO ChatCompletion cost:%v ", time.Since(start))
+	}(time.Now())
 	rsp, err := s.cli.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model:    openai.GPT4,
+		Model:    openai.GPT3Dot5Turbo,
 		Messages: messages,
 	})
 	if err != nil {
-		return rsp, fmt.Errorf("chat failed:%v", err)
+		return rsp, err
 	}
 
 	if len(rsp.Choices) == 0 {

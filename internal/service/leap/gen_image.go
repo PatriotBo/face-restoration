@@ -13,34 +13,42 @@ import (
 // GenImageRequest for generating images api
 type GenImageRequest struct {
 	Prompt         string `json:"prompt"`
-	NegativePrompt string `json:"negative_prompt"`
-	Steps          int    `json:"steps"`            // The number of steps to use for the inference.
-	Width          int    `json:"width"`            // The width of the image to use for the inference.
-	Height         int    `json:"height"`           // The height of the image to use for the inference.
-	NumberOfImages int    `json:"number_of_images"` // The number of images to generate for the inference.
+	Steps          int    `json:"steps"`          // The number of steps to use for the inference.
+	Width          int    `json:"width"`          // The width of the image to use for the inference.
+	Height         int    `json:"height"`         // The height of the image to use for the inference.
+	NumberOfImages int    `json:"numberOfImages"` // The number of images to generate for the inference.
 	// The higher the prompt strength, the closer the generated image will be to the prompt. Must be between 0 and 30.
-	PromptStrength int    `json:"prompt_strength"`
-	Seed           int64  `json:"seed"`       // The seed to use for the inference. Must be a positive integer.
-	WebhookURL     string `json:"webhookUrl"` // An optional webhook URL that will be called when the model is trained
+	PromptStrength int   `json:"promptStrength"`
+	Seed           int64 `json:"seed"` // The seed to use for the inference. Must be a positive integer.
 	// Optionally apply face restoration to the generated images. This will make images of faces look more realistic.
 	RestoreFaces  bool `json:"restoreFaces"` // Optionally enhance your prompts automatically to generate better results.
-	EnhancePrompt bool `json:"enhance_prompt"`
+	EnhancePrompt bool `json:"enhancePrompt"`
 	// Optionally upscale the generated images. This will make the images look more realistic. The default is x1,
 	// which means no upscaling. The maximum is x4.
-	UpscaleBy string `json:"upscale_by"`
+	UpscaleBy string `json:"upscaleBy"`
 	Sampler   string `json:"sampler"` // Choose the sampler used for your inference. The default is 'unipc'
 }
 
+// GenImageResponse for both /generate-image and /get-image api
+type GenImageResponse struct {
+	ID     string   `json:"id"`
+	State  string   `json:"state"`
+	Images []string `json:"images"`
+}
+
 // GenerateImage format request and call /generate-image api
-func (s *serviceImpl) GenerateImage(_ context.Context, modID, prompt string) (*Response, error) {
+func (s *serviceImpl) GenerateImage(_ context.Context, modID, prompt string) (*GenImageResponse, error) {
+	fmt.Printf("INFO GenerateImagen modID:%s \n", modID)
+	defer func(start time.Time) {
+		fmt.Printf("INFO GenerateImage cost:%v \n", time.Since(start))
+	}(time.Now())
 	req, err := generateImageRequest(modID, prompt, s.token)
 	if err != nil {
 		return nil, fmt.Errorf("generate request failed:%v", err)
 	}
-
 	resp, err := s.client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("do request failed err:%v", err)
+		return nil, fmt.Errorf("do request failed err:%v status:%d", err, resp.StatusCode)
 	}
 	defer func() {
 		if err = resp.Body.Close(); err != nil {
@@ -53,10 +61,11 @@ func (s *serviceImpl) GenerateImage(_ context.Context, modID, prompt string) (*R
 		return nil, fmt.Errorf("read resp.Body failed :%v", err)
 	}
 
-	response := new(Response)
+	response := new(GenImageResponse)
 	if err := json.Unmarshal(body, response); err != nil {
 		return nil, fmt.Errorf("unmarshal resp failed:%v", err)
 	}
+	fmt.Printf("INFO GenerateImages response:%+v \n", resp)
 	return response, nil
 }
 
@@ -68,8 +77,9 @@ func generateImageRequest(modID, prompt, token string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("INFO generateImageRequest req:%s \n", string(by))
 	request.Header.Set("Authorization", token)
-	request.Header.Set("accept", "application/json")
+	request.Header.Set("Accept", "application/json")
 	request.Header.Set("Content-Type", "application/json")
 	return request, nil
 }
@@ -79,17 +89,13 @@ func generateImageRequest(modID, prompt, token string) (*http.Request, error) {
 // Some of them may become customized in the future version
 func defaultGenerateImageRequest() *GenImageRequest {
 	return &GenImageRequest{
-		NegativePrompt: `blurry, lowres, ugly, boring, poor lighting, dull,unclear, duplicate, error,low quality,
-out of frame, watermark, signature, double faces, two people, multiple people`,
 		Steps:          50,
 		Width:          512,
 		Height:         512,
 		NumberOfImages: 2,
 		PromptStrength: 10,
 		Seed:           time.Now().Unix(),
-		WebhookURL:     "",
-		RestoreFaces:   false,
-		UpscaleBy:      "x2",
+		UpscaleBy:      "x1",
 		Sampler:        "unipc",
 	}
 }

@@ -2,9 +2,9 @@ package logic
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
+	"time"
 
 	"github.com/sashabaranov/go-openai"
 
@@ -22,13 +22,14 @@ const (
 // GenerateImageRequest request for generating images
 type GenerateImageRequest struct {
 	GenType GenType `json:"gen_type"`
+	ModID   string  `json:"mod_id"`
 	Prompt  string  `json:"prompt"`
 }
 
 // GenerateImage generate images handler
 func (m *MiniProgramImpl) GenerateImage(ctx *gin.Context) {
-	req, err := parseGenerateImageRequest(ctx)
-	if err != nil {
+	req := new(GenerateImageRequest)
+	if err := ctx.BindJSON(req); err != nil {
 		fmt.Printf("ERROR GenerateImage parse req:%v \n", err)
 		return
 	}
@@ -36,23 +37,53 @@ func (m *MiniProgramImpl) GenerateImage(ctx *gin.Context) {
 
 	optimizePrompt, err := m.optimizePrompt(ctx, req.Prompt)
 	if err != nil {
-		fmt.Printf("ERROR GenerateImage optimize prompt:%v", err)
+		fmt.Printf("ERROR GenerateImage optimize prompt:%v \n", err)
 		return
 	}
-	fmt.Printf("INFO GenerateImage optimize prompt:%s", optimizePrompt)
+	fmt.Printf("INFO GenerateImage optimize prompt:%s \n", optimizePrompt)
+
+	images, err := m.generateImages(ctx, req.ModID, optimizePrompt)
+	if err != nil {
+		fmt.Printf("ERROR GenerateImage generate failed:%v \n", err)
+		return
+	}
+	fmt.Printf("INFO GenerateImage success images:%v \n", images)
+
 }
 
-func parseGenerateImageRequest(ctx *gin.Context) (*GenerateImageRequest, error) {
-	body, err := io.ReadAll(ctx.Request.Body)
-	if err != nil {
-		return nil, fmt.Errorf("read req.body failed:%v", err)
+func (m *MiniProgramImpl) generateImages(ctx context.Context, modID, prompt string) ([]string, error) {
+	resp, err := m.leapService.GenerateImage(ctx, modID, prompt)
+	if err != nil || resp.ID == "" {
+		return nil, fmt.Errorf("generate images failed:%v", err)
 	}
 
-	req := new(GenerateImageRequest)
-	if err = json.Unmarshal(body, req); err != nil {
-		return nil, fmt.Errorf("unmarshal req failed:%v", err)
+	return m.fetchImagesFromLeap(ctx, modID, resp.ID)
+}
+
+func (m *MiniProgramImpl) fetchImagesFromLeap(ctx context.Context, modID, id string) ([]string, error) {
+	fmt.Printf("fetchImagesFromLeap result id:%s  \n", id)
+	t := time.NewTicker(3 * time.Second)
+	count := 20
+	for range t.C {
+		count--
+		if count < 0 {
+			return nil, errors.New("fetch images result failed")
+		}
+		rsp, err := m.leapService.GetImages(ctx, modID, id)
+		if err != nil {
+			return nil, err
+		}
+		if len(rsp.Images) == 0 {
+			fmt.Printf("images not ready \n")
+			continue
+		}
+		var images []string
+		for _, v := range rsp.Images {
+			images = append(images, v.URI)
+		}
+		return images, nil
 	}
-	return req, nil
+	return nil, errors.New("fetch images result failed")
 }
 
 func (m *MiniProgramImpl) optimizePrompt(ctx context.Context, prompt string) (string, error) {
