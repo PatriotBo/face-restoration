@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/sashabaranov/go-openai"
@@ -24,6 +25,11 @@ type GenerateImageRequest struct {
 	GenType GenType `json:"gen_type"`
 	ModID   string  `json:"mod_id"`
 	Prompt  string  `json:"prompt"`
+}
+
+// GenerateImageResponse generate results
+type GenerateImageResponse struct {
+	ImageURLs []string `json:"image_urls"`
 }
 
 // GenerateImage generate images handler
@@ -49,6 +55,9 @@ func (m *MiniProgramImpl) GenerateImage(ctx *gin.Context) {
 	}
 	fmt.Printf("INFO GenerateImage success images:%v \n", images)
 
+	ctx.JSON(http.StatusOK, &GenerateImageResponse{
+		ImageURLs: images,
+	})
 }
 
 func (m *MiniProgramImpl) generateImages(ctx context.Context, modID, prompt string) ([]string, error) {
