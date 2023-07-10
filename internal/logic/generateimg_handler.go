@@ -18,7 +18,15 @@ type GenType int
 // WallPaper enum of GenType
 const (
 	WallPaper GenType = 1
+	Selfie    GenType = 2
 )
+
+var modIDMap = map[string]string{
+	"Realistic":        "eab32df0-de26-4b83-a908-a83f3015e971",
+	"Open Journey V4":  "1e7737d7-545e-469f-857f-e4b46eaa151d",
+	"Stable Diffusion": "ee88d150-4259-4b77-9d0f-090abe29f650",
+	"Modern Disney":    "8ead1e66-5722-4ff6-a13f-b5212f575321",
+}
 
 // GenerateImageRequest request for generating images
 type GenerateImageRequest struct {
@@ -48,7 +56,7 @@ func (m *MiniProgramImpl) GenerateImage(ctx *gin.Context) {
 	}
 	fmt.Printf("INFO GenerateImage optimize prompt:%s \n", optimizePrompt)
 
-	images, err := m.generateImages(ctx, req.ModID, optimizePrompt)
+	images, err := m.generateImages(ctx, modIDMap[req.ModID], optimizePrompt)
 	if err != nil {
 		fmt.Printf("ERROR GenerateImage generate failed:%v \n", err)
 		return
@@ -133,7 +141,7 @@ var translateMessageContentFormat = `请将下面的内容翻译为英文："%s"
 
 var promptOptimizeMessageContentFormat = `
 假如你是一个 AI prompt 优化专家，请参考下面的例子，将我后面输入的简单的 prompt 进行优化填充，生成更加详细合理的 prompt，以便 midjourney ，stable diffusion 等 
-可以更好的生成图片，可以供你参考的例子如下：
+可以更好的生成图片，请使用英文给出回答。可以供你参考的例子如下：
 "Mood: Mystical | 
 Subject: A mesmerizing labyrinth of crystalline ice caves under a frosty night sky | 
 Timing: Midnight | 

@@ -5,7 +5,9 @@ go 1.20
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/robfig/cron v1.2.0
+	github.com/sashabaranov/go-openai v1.13.0
 	github.com/silenceper/wechat/v2 v2.1.5
+	github.com/tencentyun/cos-go-sdk-v5 v0.7.42
 	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.5.1
@@ -43,10 +45,8 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
-	github.com/sashabaranov/go-openai v1.13.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
-	github.com/tencentyun/cos-go-sdk-v5 v0.7.42 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
