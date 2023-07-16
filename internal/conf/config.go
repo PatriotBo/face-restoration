@@ -3,6 +3,7 @@ package conf
 import (
 	"face-restoration/internal/service/leap"
 	"face-restoration/internal/service/openai"
+	"face-restoration/internal/service/wechat"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -42,13 +43,14 @@ type CodeFormerConfig struct {
 
 // Config 配置信息
 type Config struct {
-	DB             DBConfig              `yaml:"db"`
-	Wechat         OfficialAccountConfig `yaml:"wechat"`
-	CodeFormer     CodeFormerConfig      `yaml:"codeFormer"`
-	ImageURLPrefix string                `yaml:"imageURLPrefix"`
-	Cos            cos.Config            `yaml:"cos"`
-	Leap           leap.Config           `yaml:"leap"`
-	OpenAI         openai.Config         `yaml:"openAI"`
+	DB             DBConfig                 `yaml:"db"`
+	Wechat         OfficialAccountConfig    `yaml:"wechat"`
+	CodeFormer     CodeFormerConfig         `yaml:"codeFormer"`
+	ImageURLPrefix string                   `yaml:"imageURLPrefix"`
+	Cos            cos.Config               `yaml:"cos"`
+	Leap           leap.Config              `yaml:"leap"`
+	OpenAI         openai.Config            `yaml:"openAI"`
+	MiniProgram    wechat.MiniProgramConfig `yaml:"mini_program"`
 }
 
 func init() {

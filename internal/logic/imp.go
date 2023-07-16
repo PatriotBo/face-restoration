@@ -10,6 +10,7 @@ import (
 	"face-restoration/internal/service/cos"
 	"face-restoration/internal/service/leap"
 	"face-restoration/internal/service/openai"
+	"face-restoration/internal/service/wechat"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -54,6 +55,7 @@ type MiniProgramImpl struct {
 	cosService    cos.Service
 	leapService   leap.Service
 	openAIService openai.Service
+	wechatService wechat.Service
 }
 
 // NewMiniProgramImpl create a new WeChat mini program instance
@@ -64,6 +66,7 @@ func NewMiniProgramImpl() *MiniProgramImpl {
 		cosService:    cos.New(conf.GetConfig().Cos),
 		leapService:   leap.New(conf.GetConfig().Leap),
 		openAIService: openai.New(conf.GetConfig().OpenAI),
+		wechatService: wechat.New(conf.GetConfig().MiniProgram),
 	}
 }
 
@@ -77,6 +80,15 @@ func (m *MiniProgramImpl) Run() {
 	})
 	e.POST("/api/generate-image", func(ctx *gin.Context) {
 		m.GenerateImage(ctx)
+	})
+	e.POST("/api/login", func(ctx *gin.Context) {
+		m.Login(ctx)
+	})
+	e.POST("/api/pay", func(ctx *gin.Context) {
+
+	})
+	e.POST("/api/userinfo", func(ctx *gin.Context) {
+
 	})
 
 	// 设置HTTPS证书和密钥
