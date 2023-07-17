@@ -15,6 +15,9 @@ type DBDao interface {
 	CreatePredictRecord(ctx context.Context, r *model.PredictRecord) error
 	UpdatePredictRecord(ctx context.Context, r *model.PredictRecord) error
 	ListProcessingRecords(ctx context.Context) ([]*model.PredictRecord, error)
+
+	CreateOrder(ctx context.Context, order *model.Orders) error
+	UpdateOrder(ctx context.Context, order *model.Orders) error
 }
 
 type dbDao struct {
@@ -61,4 +64,15 @@ func (d *dbDao) ListProcessingRecords(ctx context.Context) ([]*model.PredictReco
 		Where("status = ?", model.Processing).
 		Order("create_time ASC").
 		Find(&list).Error
+}
+
+func (d *dbDao) CreateOrder(ctx context.Context, order *model.Orders) error {
+	return d.db.WithContext(ctx).Create(order).Error
+}
+
+func (d *dbDao) UpdateOrder(ctx context.Context, order *model.Orders) error {
+	return d.db.WithContext(ctx).
+		Model(new(model.Orders)).
+		Where("subscribe_id = ?", order.SubscribeID).
+		Updates(order).Error
 }

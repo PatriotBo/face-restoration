@@ -8,6 +8,7 @@ import (
 	"face-restoration/internal/dao"
 	"face-restoration/internal/service/codeformer"
 	"face-restoration/internal/service/cos"
+	"face-restoration/internal/service/guid"
 	"face-restoration/internal/service/leap"
 	"face-restoration/internal/service/openai"
 	"face-restoration/internal/service/wechat"
@@ -56,6 +57,7 @@ type MiniProgramImpl struct {
 	leapService   leap.Service
 	openAIService openai.Service
 	wechatService wechat.Service
+	guidService   guid.Service
 }
 
 // NewMiniProgramImpl create a new WeChat mini program instance
@@ -67,6 +69,7 @@ func NewMiniProgramImpl() *MiniProgramImpl {
 		leapService:   leap.New(conf.GetConfig().Leap),
 		openAIService: openai.New(conf.GetConfig().OpenAI),
 		wechatService: wechat.New(conf.GetConfig().MiniProgram),
+		guidService:   guid.MustNew(1), // todo: use different node
 	}
 }
 

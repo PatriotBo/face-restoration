@@ -48,12 +48,13 @@ type Code2SessionResponse struct {
 }
 
 func (s *serviceImpl) Code2Session(_ context.Context, code string) (*Code2SessionResponse, error) {
-	u := fmt.Sprintf("%s?appid=%s&secret=%s&js_code=%s&grant_type=",
+	u := fmt.Sprintf("%s?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
 		code2sessionURL,
 		url.QueryEscape(s.config.AppID),
 		url.QueryEscape(s.config.AppKey),
 		url.QueryEscape(code))
 
+	fmt.Printf("INFO Code2Session url:%s \n code:%s \n", u, code)
 	resp, err := s.client.Get(u)
 	if err != nil {
 		return nil, err

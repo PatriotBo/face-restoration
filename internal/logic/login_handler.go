@@ -18,6 +18,7 @@ type LoginResponse struct {
 	PayStatus  PayStatus `json:"pay_status"`
 }
 
+// Login api for user login
 func (m *MiniProgramImpl) Login(ctx *gin.Context) {
 	request := new(LoginRequest)
 	if err := ctx.BindJSON(request); err != nil {
@@ -25,6 +26,7 @@ func (m *MiniProgramImpl) Login(ctx *gin.Context) {
 		ctx.JSON(400, "bad request")
 		return
 	}
+	fmt.Printf("INFO login request:%+v \n", request)
 	resp, err := m.wechatService.Code2Session(ctx, request.Code)
 	if err != nil {
 		fmt.Printf("ERROR code2session failed:%v \n", err)
@@ -37,5 +39,6 @@ func (m *MiniProgramImpl) Login(ctx *gin.Context) {
 		SessionKey: resp.SessionKey,
 		PayStatus:  PayVIP, // todo: 从数据库获取用户账号信息
 	}
+	fmt.Printf("INFO login resp:%+v \n", response)
 	ctx.JSON(200, response)
 }
